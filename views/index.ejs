@@ -1,13 +1,92 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-    <h1><%= title %></h1>
-    <p>Your mission is to replace this page with a badass <a href="http://en.wikipedia.org/wiki/Connect_Four">Connect 4</a> game.</p>
-    <p>We've given you the basic back end that you will be communicating with. Refer to the docs and guidelines in the <a href="https://github.com/socialtables/connect-four">Github repo</a>. Your job is to implement the user interface and visual representation of the game.</p>
-    <p>Good Luck!</p>
-  </body>
+	<head>
+		<title>Hello World</title>
+		<link href="http://cdn.sencha.io/touch/sencha-touch-2.2.1/resources/css/sencha-touch.css" rel="stylesheet" />
+		<script src="http://cdn.sencha.io/touch/sencha-touch-2.2.1/sencha-touch-all.js"></script>
+		<link rel='stylesheet' href='/stylesheets/style.css' />
+		<script type="text/javascript">
+
+			Ext.define('Board', {
+				extend: 'Ext.Container',
+				xtype: 'board',
+				config : {
+					fullscreen: true,
+					boardArray: [],
+					uuid: null,
+		           	items: [
+		            	{
+		            		xtype: 'toolbar', 
+		            		title: 'Connect Four',
+		            		docked: 'top',
+		            		items: [
+		            			{ 
+		            				xtype: 'button',
+		            				text: 'New Game'
+		            			}
+		            		]
+		            	}
+		            ],
+		            layout: 'fit',
+		            styleHtmlContent: true,
+		            cls: 'board',
+				},
+
+				newGame: function() {
+
+					Ext.Ajax.request({
+					    url: '/new',
+					    method: 'GET',
+					    scope: this,
+					    success: function (response) {
+					    	var responseData = Ext.JSON.decode(response.responseText.trim());
+
+							this.setUuid(responseData.id);
+							this.setBoardArray(responseData.data);
+					    	this.add(this.createGrid());		
+					    }
+			    	});		
+			    },
+
+			    createGrid: function() {
+			    	var startingPosition = 100,
+			    		circleWidth = 25,
+			    		padding = 75;
+
+			    	var grid = new Ext.draw.Component({
+			            fullscreen: false,
+			            items: []
+	        		});
+
+			    	var gridSurface = grid.getSurface('main');
+	        		//console.log(Ext.Viewport.getWindowWidth());
+			    	for (var i = 0; i < 7; i++) {
+			    		for (var j = 0; j < 6; j++) {
+							gridSurface.add({
+								type: 'circle',
+				                cx: startingPosition + (i * padding),
+				                cy: startingPosition + (j * padding),
+				                r: circleWidth,
+				                fillStyle: 'white'
+				            });
+				        }
+					}	
+
+					return grid;
+			    }
+	        });
+			 
+			Ext.application({
+				board: {},
+				name: 'Connect4',
+
+			    // Sencha Touch mandatory method - called 1st by framework.
+				launch: function() {
+					this.board = Ext.create('Board');
+         			this.board.newGame();
+				}
+			});
+		</script>
+	</head>
+	<body></body>
 </html>
